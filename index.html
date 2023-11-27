@@ -1,0 +1,132 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>Fruit Matching Game</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+    <div class="bg">
+        <h1>Fruit Matching Game</h1>
+        <p>Welcome to the Fruit Matching Game! Uncover cards to find matching pairs. Be careful, your clicks are being counted!</p>
+        <p>Directions: Click on 2 cards and try to find a match!</p>
+        <p id="message"></p>
+        <div class="grid" id="gameGridContainer">
+        </div>
+        <p></p>
+        <button id="resetButton" onclick="resetGame()">Reset</button>
+        <p class="score"><span id="numScore">Score: 0</span></p>
+        <p class="clicks"><span id="numClicks">Number of Clicks: 0</span></p>
+    </div>
+
+    <script>
+        let numScore = 0;
+let numClicks = 0;
+let chosenCard = null;
+let interact = true;
+const gameGridContainer = document.getElementById('gameGridContainer');
+const scoreDisplay = document.getElementById('numScore');
+const clicksDisplay = document.getElementById('numClicks');
+const messageDisplay = document.getElementById('message');
+const cards = ['one.png', 'two.png', 'three.png', 'four.png', 'five.png', 'six.png', 'seventh.png', 'eighth.png',
+'one.png', 'two.png', 'three.png', 'four.png', 'five.png', 'six.png', 'seventh.png', 'eighth.png'];
+//2 sets of 8 images
+
+function genGrid() {
+    for (let i = cards.length - 1; i > 0; i--) {
+        const w = Math.floor(Math.random() * (i + 1));
+        [cards[i], cards[w]] = [cards[w], cards[i]];
+    }
+  //Fisher-Yates algorithm but simpliified
+
+    for (let i = 0; i < 16; i++) {
+        const squares = document.createElement('div');
+        squares.classList.add('grid-item');
+        squares.onclick = () => cardHandler(squares);
+        const fruits = document.createElement('img');
+        fruits.src = cards[i];
+        squares.appendChild(fruits);
+        gameGridContainer.appendChild(squares);
+    }
+}
+
+genGrid();
+
+function messageDisplayer(numClicks) {
+    let message = '';
+
+    if (numClicks > 40) {
+        message = `Bad start!`;
+    } else if (numClicks > 20) {
+        message = `Not bad`;
+    } else {
+        message = `You are an expert!`;
+    }
+
+    messageDisplay.textContent = message;
+}
+
+function cardHandler(card) {
+   if (!interact || card === chosenCard || card.classList.contains('matched')) {
+       return;
+   }
+
+   showCard(card);
+
+   if (!chosenCard) {
+       chosenCard = card;
+   } else {
+       interact = false;
+       setTimeout(() => {
+           matchedCards(card, chosenCard)
+           ? matchedCardsHandler(card, chosenCard)
+           : hideNonMatchedCards(card, chosenCard);
+           resetChosenCards();
+           interact = true;
+
+           if (numScore === 8) {
+               messageDisplayer(numScore);
+           }
+       }, 1000);
+   }
+}
+
+function showCard(card) {
+   card.querySelector('img').style.opacity = '1';
+   numClicks++;
+   clicksDisplay.textContent = `Number of Clicks: ${numClicks}`;
+}
+
+function matchedCards(card1, card2) {
+   return card1.querySelector('img').src === card2.querySelector('img').src;
+}
+
+function matchedCardsHandler(card1, card2) {
+   numScore++;
+   scoreDisplay.textContent = `Score: ${numScore}`;
+   card1.classList.add('matched');
+   card2.classList.add('matched');
+}
+
+function hideNonMatchedCards(card1, card2) {
+   card1.querySelector('img').style.opacity = '0';
+   card2.querySelector('img').style.opacity = '0';
+}
+
+function resetChosenCards() {
+   chosenCard = null;
+}
+
+
+function resetGame() {
+    numScore = 0;
+    numClicks = 0;
+    scoreDisplay.textContent = `Score: ${numScore}`;
+    clicksDisplay.textContent = `Number of Clicks: ${numClicks}`;
+    gameGridContainer.innerHTML = '';
+    genGrid();
+    interact = true;
+    messageDisplay.textContent = '';
+}
+    </script>
+</body>
+</html>
